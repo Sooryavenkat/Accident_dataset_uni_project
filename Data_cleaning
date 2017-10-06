@@ -1,0 +1,47 @@
+#Load data
+
+accident = read.csv(file="…… \\ACCIDENT.csv", header=TRUE, sep=",") 
+
+#Load other 7 datasource
+
+accident_event = read.csv(file="...\\ACCIDENT_EVENT.csv", header=TRUE, sep=",") 
+
+#List Datasource(Rows and cloumn)
+
+explore_data=as.data.frame(t(sapply(list(accident,accident_eVENT,ACCIDENT_LOCATION,ATMOSPHERIC_COND,NODE,PERSON,ROAD_SURFACE_COND,SUBDCA,VEHICLE),function(x){
+     c(length(unique(x$ACCIDENT_NO)),
+       length(x),
+       nrow(x))
+ })))
+ 
+colnames(explore_data)=c("# Accidents", "# Columns","# Rows")
+rownames(explore_data)=c("Accident File","Accident Event File","Accident Location File","Atmospheric Condition File","Node File","Person File","Road Condition File","SubDCA File","Vehicle File")
+explore_data
+
+#Remove Duplicate entries
+
+dim(accident)
+dedupe =!duplicated(accident[ ,2:25])
+accident.deduped =accident[dedupe,]
+dim(accident.deduped)
+
+#Change Empty cells to NA and removing it
+
+accident_location = read.csv(file="....\\ACCIDENT_LOCATION.csv", header=TRUE, na.strings=c("","NA"))
+Output = na.omit(accident_location)
+write.csv(accident_location, "...Desktop/accident_location.csv")
+
+#If the csv cell has extra space before emplty content(use this code to change it to NA) 
+
+data = read.csv(file="....\\ACCIDENT_LOCATION.csv", header=TRUE, na.strings=c(""," ","NA"))
+y = na.omit(data)
+write.csv(y, "...../Desktop/y.csv")
+
+#Changing Unknown value to NA
+#Same as above
+
+
+
+
+
+
