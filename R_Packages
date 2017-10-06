@@ -1,0 +1,11 @@
+Packages for R
+
+install.packages("dplyr") 
+library(dplyr) # Data Manipulation
+library(ggplot2) # vanilla graphs
+library(plotly) # interactive graphs
+library(lubridate) # time manipulation functions
+library(zoo) # some more time manipulation functions
+library(forecast) # time series forecasting
+library(RCurl) # import Dow Jones data
+library(tseries) # time series statistical analysis
