@@ -2,6 +2,7 @@ Packages for R
 
 install.packages("dplyr") 
 library(dplyr) # Data Manipulation
+library(Magrittr) # to improve readability and maintainability of code
 library(ggplot2) # vanilla graphs
 library(plotly) # interactive graphs
 library(lubridate) # time manipulation functions
