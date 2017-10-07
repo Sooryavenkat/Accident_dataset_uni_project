@@ -1,0 +1,55 @@
+#Finding no.of accident by months and year
+
+accident_year = accident %>% group_by(as.yearmon(ACCIDENTDATE, format="%d/%m/%Y")) %>% summarize(num_accs=n()) 
+colnames(accident_year)[1]="YearMonth"
+
+#Usinf STL model for seasonal and trend analyses
+
+decomp_accs_ts = stl(ts(log(accident_year$num_accs),frequency = 12,start=2006),s.window = "periodic")
+decomp_accs_ts$time.series = exp(decomp_accs_ts$time.series)
+
+#plot the above model using plotly
+
+plot_ly_decomp = function(time_series){
+     ts_df <- as.data.frame(time_series$time.series) %>% 
+         mutate(date = as.yearmon(time(time_series$time.series))) %>% 
+         tidyr::gather(variable, value, -date) %>% transform(id = as.integer(factor(variable)))
+     seas_plotly <- plot_ly(filter(ts_df, variable == "seasonal"),
+                            x = ~date, y = ~value, colors = "Dark2", name="seasonal", 
+                            type="scatter", mode="lines",
+                            text=unique(sapply(ts_df$date,toString)),hoverinfo="text + y") %>%
+         layout(xaxis=list(title="", showticklabels = FALSE))
+     remain_plotly <- plot_ly(filter(ts_df, variable == "remainder"),
+                              x = ~date, y = ~value, colors = "Dark2", name="noise", 
+                              type="scatter", mode = "lines",
+                              text=unique(sapply(ts_df$date,toString)),hoverinfo="text + y") %>%
+         add_trace(x = ~date, y= 1,mode = "lines",showlegend=FALSE,line = list(
+             color = "gray",
+             dash = "dashed"                                
+         )) %>%
+         layout(xaxis=list(title=""))
+     trend_plotly <- plot_ly(filter(ts_df, variable == "trend"),
+                             x = ~date, y = ~value, colors = "Dark2", name="trend", 
+                             type="scatter", mode="lines",
+                             text=unique(sapply(ts_df$date,toString)),hoverinfo="text + y") %>%
+         layout(xaxis=list(title="", showticklabels = FALSE))
+     data_plotly <- plot_ly(group_by(ts_df,date) %>% summarize(value = prod(value)),
+                            x = ~date, y = ~value, colors = "Dark2", name="data", 
+                            type="scatter", mode="lines",
+                            text=unique(sapply(ts_df$date,toString)),hoverinfo="text + y") %>%
+         layout(title = "Victoria Road Accidents Multiplicative Model",
+                xaxis=list(title="", showticklabels = FALSE))
+     subplot(list(data_plotly, seas_plotly, trend_plotly, remain_plotly),nrows=4) 
+ }
+ 
+plot_ly_decomp(decomp_accs_ts) %>% layout(legend = list(font=list(size=14)))
+ 
+ 
+#Build forecast model using ARIMA
+ 
+acc_arima.fit = auto.arima(ts(accident_year$num_accs,frequency = 12,start=2006),allowdrift = TRUE, approximation=FALSE)
+acc_arima.fit
+acc_forecast = forecast(acc_arima.fit, h=12)
+ 
+
+
